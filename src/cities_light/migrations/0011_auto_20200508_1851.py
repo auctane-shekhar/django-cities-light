@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cities_light', '0009_add_subregion'),
+        ('cities_light', '0010_add_subregion'),
     ]
 
     operations = [

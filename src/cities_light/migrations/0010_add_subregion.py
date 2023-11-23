@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cities_light', '0008_city_timezone'),
+        ('cities_light', '0009_auto_20200314_1346'),
     ]
 
     operations = [

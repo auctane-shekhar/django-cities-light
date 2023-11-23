@@ -6,6 +6,8 @@ from django.db import models
 from django.db.models import lookups
 from django.utils.encoding import force_str
 from django.conf import settings
+from django.contrib.gis.db import models
+from django.contrib.gis import geos
 from django.utils.translation import gettext_lazy as _
 
 from unidecode import unidecode
@@ -84,6 +86,7 @@ class Base(models.Model):
     slug = autoslug.AutoSlugField(populate_from='name_ascii')
     geoname_id = models.IntegerField(null=True, blank=True, unique=True)
     alternate_names = models.TextField(null=True, blank=True, default='')
+    location_map = models.MultiPolygonField(null=True)
 
     objects = BaseManager()
 
@@ -99,6 +102,14 @@ class Base(models.Model):
         if display_name:
             return display_name
         return self.name
+    
+    def save(self, *args, **kwargs):
+        # https://gis.stackexchange.com/questions/13498/generalizing-polygons-to-multipolygons-in-geodjango
+        # if location_map ends up as a Polygon, make it into a MultiPolygon
+        if self.location_map and isinstance(self.location_map, geos.Polygon):
+            self.location_map = geos.MultiPolygon(self.location_map)
+
+        super().save(*args, **kwargs)
 
 
 class AbstractCountry(Base):
@@ -126,6 +137,7 @@ class AbstractRegion(Base):
     display_name = models.CharField(max_length=200)
     geoname_code = models.CharField(max_length=50, null=True, blank=True,
                                     db_index=True)
+    code2 = models.CharField(max_length=5, null=True, blank=True)
 
     country = models.ForeignKey(CITIES_LIGHT_APP_NAME + '.Country',
                                 on_delete=models.CASCADE)
